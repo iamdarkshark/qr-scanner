@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>QR-kodscanner</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.10/html5-qrcode.min.js"></script>
+  <style>
+    #reader {
+      width: 100%;
+      max-width: 400px;
+      margin: auto;
+      padding: 10px;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 1.1rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="reader"></div>
+  <div id="result">Scanna en QR-kod...</div>
+
+  <script>
+    const resultContainer = document.getElementById("result");
+
+    function onScanSuccess(decodedText, decodedResult) {
+      resultContainer.innerText = `QR-kod: ${decodedText}`;
+      
+      // 🔁 Integrera här: skicka datan till din app, t.ex. genom postMessage, API-anrop eller lagring
+      // window.parent.postMessage(decodedText, '*');
+      
+      html5QrCode.stop().then(() => {
+        console.log("Scanner stoppad");
+      }).catch(err => {
+        console.error("Fel vid stopp:", err);
+      });
+    }
+
+    function onScanFailure(error) {
+      // Misslyckade försök – kan ignoreras
+    }
+
+    const html5QrCode = new Html5Qrcode("reader");
+
+    Html5Qrcode.getCameras().then(devices => {
+      if (devices && devices.length) {
+        const cameraId = devices[0].id;
+        html5QrCode.start(
+          cameraId,
+          {
+            fps: 10,
+            qrbox: 250
+          },
+          onScanSuccess,
+          onScanFailure
+        );
+      }
+    }).catch(err => {
+      resultContainer.innerText = `Kunde inte starta kamera: ${err}`;
+    });
+  </script>
+</body>
+</html>
