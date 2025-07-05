@@ -47,26 +47,31 @@
 
     // Starta kamera och scanning
     Html5Qrcode.getCameras().then(devices => {
-      if (devices && devices.length) {
-        const cameraId = devices[0].id;
-        html5QrCode.start(
-          cameraId,
-          {
-            fps: 10,
-            qrbox: 250
-          },
-          onScanSuccess,
-          errorMessage => {
-            // Valfri: logga skanningsfel
-            console.warn("QR-scan miss:", errorMessage);
-          }
-        );
-      } else {
-        alert("Ingen kamera hittades.");
+  if (devices && devices.length) {
+    // Försök hitta en kamera som INTE är front/selfie
+    const backCamera = devices.find(camera => {
+      const label = camera.label.toLowerCase();
+      return !(label.includes("front") || label.includes("selfie"));
+    }) || devices[0]; // fallback till första
+
+    html5QrCode.start(
+      backCamera.id,
+      {
+        fps: 10,
+        qrbox: 250
+      },
+      onScanSuccess,
+      errorMessage => {
+        console.warn("QR-scan miss:", errorMessage);
       }
-    }).catch(err => {
-      alert("Kunde inte starta kamera: " + err);
-    });
+    );
+  } else {
+    alert("Ingen kamera hittades.");
+  }
+}).catch(err => {
+  alert("Kunde inte starta kamera: " + err);
+});
+
   </script>
 </body>
 </html>
